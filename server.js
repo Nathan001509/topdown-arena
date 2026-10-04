@@ -141,7 +141,7 @@ function updateRoom(room, now, dt) {
 }
 function snapshot(room) {
   const now = Date.now();
-  return { type:'state', width:WIDTH, height:HEIGHT, walls:WALLS, code:room.code, mode:room.mode, capacity:room.capacity, players:room.players.size, running:room.running, waitingFor:Math.max(0,room.capacity-room.players.size), scores:room.scores, winner:room.winner, restartIn:room.winner===null?0:Math.max(0,room.restartAt-now), playersState:[...room.players.values()].map(p=>({id:p.id,name:p.name,team:p.team,x:p.x,y:p.y,angle:p.angle,hp:p.hp,dead:p.hp<=0})), bullets:room.bullets.map(b=>({x:b.x,y:b.y,team:b.team})) };
+  return { type:'state', width:WIDTH, height:HEIGHT, walls:WALLS, code:room.code, mode:room.mode, capacity:room.capacity, players:room.players.size, running:room.running, waitingFor:Math.max(0,room.capacity-room.players.size), scores:room.scores, winner:room.winner, restartIn:room.winner===null?0:Math.max(0,room.restartAt-now), playersState:[...room.players.values()].map(p=>({id:p.id,name:p.name,team:p.team,x:p.x,y:p.y,angle:p.angle,hp:p.hp,dead:p.hp<=0})), bullets:room.bullets.map(b=>({id:`${b.owner}:${b.born}`,owner:b.owner,born:b.born,x:b.x,y:b.y,team:b.team,angle:Math.atan2(b.vy,b.vx)})) };
 }
 function broadcast(room) { const state = JSON.stringify(snapshot(room)); for (const ws of wss.clients) if (ws.readyState===WebSocket.OPEN && ws.roomCode===room.code) ws.send(state); }
 let last = Date.now(), lastBroadcast = 0;
