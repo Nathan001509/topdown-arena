@@ -15,6 +15,11 @@
     @media (pointer:coarse){.app{gap:7px;padding:8px}.topbar{min-height:25px}.brand{font-size:12px}.status{font-size:10px}.stage{width:min(calc(100vw - 16px),calc((100dvh - 48px)*1.714));border-radius:12px}.mobile{display:flex}.bottomhud{bottom:10px}.health{min-width:125px;font-size:10px;padding:6px 8px}.teamlist{display:none}.room .code-label,.room .code-copy{display:none}.room{font-size:10px;padding:5px 7px}.score{top:7px;left:7px;padding:5px 8px;font-size:16px}.hint{top:auto;bottom:8px;font-size:10px}.bottomhud{left:8px;right:8px}}
     @media (pointer:coarse) and (orientation:portrait){.app:after{content:'For a larger view, rotate your phone sideways';position:absolute;top:42px;color:#9db3c7;font-size:11px;z-index:1;pointer-events:none}.stage{width:min(calc(100vw - 14px),calc((100dvh - 95px)*1.714))}.mobile{bottom:10px}.stick{width:88px;height:88px}.nub{width:36px;height:36px}.fire{width:67px;height:67px}.topbar{width:100%}}
     @media (orientation:landscape) and (max-height:560px){.app{gap:5px;padding:5px}.stage{width:min(calc(100vw - 170px),calc((100dvh - 52px)*1.714));max-height:calc(100dvh - 48px)}.topbar{width:min(100%,1200px);min-height:22px}.brand{font-size:11px}.mobile{bottom:8px;left:max(10px,calc((100vw - min(100vw - 170px, (100dvh - 52px)*1.714))/2 + 10px));right:max(10px,calc((100vw - min(100vw - 170px, (100dvh - 52px)*1.714))/2 + 10px))}.stick{width:82px;height:82px}.nub{width:34px;height:34px}.fire{width:66px;height:66px}}
+    /* Keep the join form usable on short phone screens; the arena itself stays fixed. */
+    html,body{touch-action:auto}.app,.stage,.stage canvas,.mobile,.stick,.fire{touch-action:none}
+    .lobby{position:fixed;inset:0;z-index:10;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;-webkit-overflow-scrolling:touch;padding:max(14px,env(safe-area-inset-top)) 14px max(20px,env(safe-area-inset-bottom))}
+    .card{max-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 34px);overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;-webkit-overflow-scrolling:touch}
+    @media (pointer:coarse) and (max-height:700px){.lobby{place-items:start center}.card{margin:auto 0}}
   </style>
 </head>
 <body>
