@@ -38,7 +38,7 @@ function makeRoom(mode, code = makeCode()) {
   const room = { code, mode, capacity: mode === '2v2' ? 4 : 2, players: new Map(), scores: [0, 0], bullets: [], running: false, winner: null, restartAt: 0 };
   rooms.set(code, room); return room;
 }
-function teamCounts(room) { return [0, 0].map(t => [...room.players.values()].filter(p => p.team === t).length); }
+function teamCounts(room) { return [0, 1].map(t => [...room.players.values()].filter(p => p.team === t).length); }
 function resetPlayer(p, now) {
   const lane = p.team === 0 ? 0 : 1;
   p.x = lane === 0 ? 130 + Math.random() * 100 : WIDTH - 230 + Math.random() * 100;
