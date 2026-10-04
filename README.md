@@ -26,6 +26,7 @@ No extra WebSocket URL, port, or certificate setting is needed: the server binds
 ## Controls and rules
 
 - **WASD** (or arrow keys) to move, mouse to aim, hold left click to fire.
+- On phones, use the left stick to move and drag the right stick to aim and fire. Turn the phone sideways for a larger arena view.
 - 100 HP, 25 damage per hit, 250 ms firing cooldown, 2 second respawn.
 - Teammates cannot damage one another. The first team to 10 kills wins; the next round starts after four seconds.
 
