@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
   <meta name="theme-color" content="#07111c">
-  <title>Topdown Arena — Strike Team</title>
+  <title>Topdown Arena — Tank Battle</title>
   <style>
     :root{color-scheme:dark;--bg:#07111c;--panel:#101d2b;--line:#263c50;--blue:#43b9ff;--red:#ff536d;--lime:#c6ff75;--text:#edf6ff;--muted:#9ab0c4}
     *{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;background:radial-gradient(ellipse at 50% 38%,#152b3d,#07111c 72%);font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Arial,sans-serif;color:var(--text);touch-action:none}
@@ -35,7 +35,7 @@
       <div class="bottomhud"><div class="health"><span id="hpText">100 HP</span><div class="healthline"><i id="hpBar"></i></div></div><div class="teamlist" id="teamList"></div></div>
     </div>
     <div class="mobile" id="mobileControls"><div class="stick" id="moveStick"><div class="nub" id="moveNub"></div></div><button class="fire" id="fireButton">FIRE</button></div>
-    <div class="lobby" id="lobby"><form class="card" id="joinForm"><div class="eyebrow">Online multiplayer</div><h1>Enter the arena.</h1><p>Play a quick match or create a private room and share its invite with friends.</p>
+    <div class="lobby" id="lobby"><form class="card" id="joinForm"><div class="eyebrow">Online multiplayer</div><h1>Enter the arena.</h1><p>Take command of a tank. Play a quick match or create a private room and share its invite.</p>
       <label class="field">Call sign<input id="nameInput" maxlength="16" autocomplete="nickname" placeholder="Your name" required></label>
       <label class="field">Game mode<select id="modeInput"><option value="1v1">1v1 · one player per team</option><option value="2v2">2v2 · two players per team</option></select></label>
       <label class="field">Room code <span style="font-weight:400;color:#8fa4b8">(optional)</span><input id="codeInput" maxlength="10" autocapitalize="characters" placeholder="Blank = quick match"></label>
@@ -63,26 +63,33 @@ for(const [w,d,x,z] of [[120,.22,0,-34.85],[120,.22,0,34.85],[.22,70,-59.85,0],[
 const wallMat=mat('#334b60',.72,.25),wallEdge=mat('#527088',.48,.35);
 const walls=[{x:250,y:135,w:42,h:190},{x:250,y:375,w:42,h:190},{x:908,y:135,w:42,h:190},{x:908,y:375,w:42,h:190},{x:470,y:110,w:260,h:34},{x:470,y:556,w:260,h:34},{x:530,y:270,w:140,h:160}];
 for(const a of walls){const x=(a.x+a.w/2-W/2)*SCALE,z=(a.y+a.h/2-H/2)*SCALE,w=a.w*SCALE,d=a.h*SCALE;box(world,'cover',w,.35,d,wallMat,x,.1,z);box(world,'cover cap',w+.06,.10,d+.06,wallEdge,x,.33,z)}
-function makeLabel(){const c=document.createElement('canvas');c.width=384;c.height=96;const ctx=c.getContext('2d');ctx.fillStyle='#07111ce8';ctx.beginPath();ctx.roundRect(9,12,366,70,18);ctx.fill();ctx.strokeStyle='#9fc3dd88';ctx.lineWidth=3;ctx.stroke();const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));sprite.scale.set(3.7,.92,1);sprite.position.y=3.15;return {sprite,ctx,tex,canvas:c}}
-const soldierMats={skin:mat('#dfaa82'),dark:mat('#162330'),blue:mat('#2389cc',.55,.24,'#087ed1'),red:mat('#cf4052',.55,.24,'#bd233c'),pants:mat('#25394b'),gun:mat('#151b21',.35,.6),visor:mat('#72dcff',.18,.45,'#219fff')};
-function createSoldier(team){const root=new THREE.Group(),rig=new THREE.Group();root.add(rig);const color=team===0?soldierMats.blue:soldierMats.red;
-  // Feet and legs; the torso faces local +X, matching server angle zero.
-  box(rig,'boot',.33,.18,.3,soldierMats.dark,.05,.12,.20);box(rig,'boot',.33,.18,.3,soldierMats.dark,.05,.12,-.20);
-  cylinder(rig,.12,.15,.62,soldierMats.pants,.02,.49,.19);cylinder(rig,.12,.15,.62,soldierMats.pants,.02,.49,-.19);
-  const jacket=new THREE.Mesh(new THREE.CapsuleGeometry(.25,.38,4,10),color);jacket.position.set(-.02,1.12,0);jacket.castShadow=true;rig.add(jacket);
-  box(rig,'armor vest',.34,.55,.58,mat('#526779'),.08,1.15,0);box(rig,'chest plate',.18,.34,.60,mat(team===0?'#38a4e0':'#e14b62'),.17,1.16,0);
-  box(rig,'belt',.42,.12,.57,soldierMats.dark,-.02,.77,0);for(const side of [-1,1])box(rig,'utility pouch',.20,.20,.16,mat('#526779'),.13,.78,side*.34);
-  box(rig,'pack',.30,.46,.48,soldierMats.dark,-.34,1.23,0);
-  const arm1=cylinder(rig,.09,.10,.55,color,.02,1.40,.36),arm2=cylinder(rig,.09,.10,.55,color,.02,1.40,-.36);arm1.rotation.x=Math.PI/2;arm2.rotation.x=Math.PI/2;
-  const head=new THREE.Mesh(new THREE.SphereGeometry(.23,16,12),soldierMats.skin);head.position.set(.03,1.78,0);head.castShadow=true;rig.add(head);
-  const helmet=new THREE.Mesh(new THREE.SphereGeometry(.25,16,10,0,Math.PI*2,0,Math.PI*.56),mat('#35495b',.48,.25));helmet.position.set(.03,1.84,0);helmet.castShadow=true;rig.add(helmet);
-  box(rig,'visor',.08,.12,.35,soldierMats.visor,.235,1.78,0);
-  // Rifle barrel points forward (+X); receiver, stock, grip and sight are visible from above.
-  box(rig,'rifle receiver',.74,.13,.15,soldierMats.gun,.63,1.35,0);box(rig,'rifle barrel',.48,.075,.075,soldierMats.dark,1.20,1.36,0);box(rig,'rifle stock',.3,.15,.16,soldierMats.dark,.14,1.35,0);box(rig,'rifle grip',.12,.25,.12,soldierMats.dark,.59,1.18,0);
-  const label=makeLabel();root.add(label.sprite);root.userData.label=label;root.userData.rig=rig;root.userData.team=team;root.scale.set(2.3,3.2,2.3);
-  const ring=new THREE.Mesh(new THREE.RingGeometry(.60,.72,32),mat(team===0?'#4fc7ff':'#ff536d',.4,.1,team===0?'#1799e8':'#e42d49'));ring.rotation.x=-Math.PI/2;ring.position.y=.025;root.add(ring);
-  const hpBack=new THREE.Mesh(new THREE.PlaneGeometry(1.8,.11),mat('#07111c'));hpBack.rotation.x=-Math.PI/2;hpBack.position.set(0,2.72,0);root.add(hpBack);
-  const hpFill=new THREE.Mesh(new THREE.PlaneGeometry(1.72,.065),mat(team===0?'#63d3ff':'#ff7082'));hpFill.rotation.x=-Math.PI/2;hpFill.position.set(0,2.735,.002);root.add(hpFill);root.userData.hpBar=hpFill;
+function makeLabel(){const c=document.createElement('canvas');c.width=384;c.height=96;const ctx=c.getContext('2d');ctx.fillStyle='#07111ce8';ctx.beginPath();ctx.roundRect(9,12,366,70,18);ctx.fill();ctx.strokeStyle='#9fc3dd88';ctx.lineWidth=3;ctx.stroke();const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));sprite.scale.set(3.7,.92,1);sprite.position.y=2.05;return {sprite,ctx,tex,canvas:c}}
+const tankMats={track:mat('#1a2630',.92,.18),wheel:mat('#43505a',.82,.22),steel:mat('#8998a0',.38,.68),dark:mat('#26353e',.48,.52),blue:mat('#287ca9',.48,.42,'#11618e'),red:mat('#ad3b49',.5,.38,'#812833'),glass:mat('#8de5f3',.2,.42,'#3bd4ed')};
+function createSoldier(team){const root=new THREE.Group(),rig=new THREE.Group();root.add(rig);const color=team===0?tankMats.blue:tankMats.red,accent=team===0?mat('#50c7ff',.36,.5,'#1baaff'):mat('#ff6679',.36,.5,'#f52b4c');
+  // Low-poly tank: continuous tracks, road wheels, armored hull, turret, hatch, and cannon.
+  for(const side of [-1,1]){
+    box(rig,'track belt',2.05,.40,.36,tankMats.track,-.02,.27,side*.72);
+    for(let i=0;i<7;i++){
+      const x=-.78+i*.25,wheel=cylinder(rig,.16,.16,.37,tankMats.wheel,x,.27,side*.72);wheel.rotation.x=Math.PI/2;
+      cylinder(rig,.065,.065,.39,tankMats.steel,x,.27,side*.72).rotation.x=Math.PI/2;
+      box(rig,'track tread',.13,.43,.045,tankMats.dark,x,.27,side*.92);
+    }
+  }
+  box(rig,'armored hull',1.78,.48,1.22,color,-.03,.52,0);
+  box(rig,'front glacis',.56,.27,1.12,team===0?mat('#3c9bc6',.48,.38):mat('#cf5260',.48,.38),.66,.67,0);
+  box(rig,'rear deck',.56,.20,.98,tankMats.dark,-.62,.78,0);
+  for(const side of [-1,1]){box(rig,'team stripe',.78,.045,.035,accent,-.10,.77,side*.615);box(rig,'headlight',.10,.10,.13,tankMats.glass,.91,.60,side*.38)}
+  cylinder(rig,.48,.48,.18,tankMats.dark,-.08,.83,0);
+  box(rig,'turret',.91,.40,.78,team===0?mat('#246c93',.44,.48):mat('#983341',.46,.42),-.12,1.08,0);
+  box(rig,'turret armor',.48,.12,.62,color,-.16,1.33,0);
+  cylinder(rig,.22,.22,.13,tankMats.steel,-.34,1.43,0);
+  // The long barrel points forward (+X) and turns with the tank for intuitive aiming.
+  cylinder(rig,.105,.13,1.0,tankMats.steel,.61,1.22,0,Math.PI/2);
+  cylinder(rig,.15,.15,.22,tankMats.dark,1.16,1.22,0,Math.PI/2);
+  const label=makeLabel();root.add(label.sprite);root.userData.label=label;root.userData.rig=rig;root.userData.team=team;root.scale.set(2.3,2,2.3);
+  const ring=new THREE.Mesh(new THREE.RingGeometry(.78,.91,32),mat(team===0?'#4fc7ff':'#ff536d',.4,.1,team===0?'#1799e8':'#e42d49'));ring.rotation.x=-Math.PI/2;ring.position.y=.025;root.add(ring);
+  const hpBack=new THREE.Mesh(new THREE.PlaneGeometry(1.8,.11),mat('#07111c'));hpBack.rotation.x=-Math.PI/2;hpBack.position.set(0,1.72,0);root.add(hpBack);
+  const hpFill=new THREE.Mesh(new THREE.PlaneGeometry(1.72,.065),mat(team===0?'#63d3ff':'#ff7082'));hpFill.rotation.x=-Math.PI/2;hpFill.position.set(0,1.735,.002);root.add(hpFill);root.userData.hpBar=hpFill;
   scene.add(root);return root;
 }
 const bulletGeo=new THREE.SphereGeometry(.14,12,10);function pos(x,y,height=0){return new THREE.Vector3((x-W/2)*SCALE,height,(y-H/2)*SCALE)}
@@ -92,15 +99,15 @@ function updateLabel(mesh,p){const l=mesh.userData.label,ctx=l.ctx,c=l.canvas;ct
 let audioContext=null,receivedSnapshot=false,lastBulletIds=new Set();
 function requestLandscape(){try{const orientation=screen.orientation;if(orientation&&typeof orientation.lock==='function')orientation.lock('landscape').catch(()=>{});}catch{/* This browser requires manual rotation; keep the game playable. */}}
 function unlockAudio(){const AudioCtor=window.AudioContext||window.webkitAudioContext;if(!AudioCtor)return;try{audioContext??=new AudioCtor();if(audioContext.state==='suspended')audioContext.resume()}catch{}}
-function playGunshot(){if(!audioContext||audioContext.state!=='running')return;const now=audioContext.currentTime;const frames=Math.floor(audioContext.sampleRate*.12),buffer=audioContext.createBuffer(1,frames,audioContext.sampleRate),data=buffer.getChannelData(0);for(let i=0;i<frames;i++)data[i]=(Math.random()*2-1)*(1-i/frames);const noise=audioContext.createBufferSource();noise.buffer=buffer;const filter=audioContext.createBiquadFilter();filter.type='bandpass';filter.frequency.setValueAtTime(1650,now);filter.Q.value=.75;const crack=audioContext.createGain();crack.gain.setValueAtTime(.19,now);crack.gain.exponentialRampToValueAtTime(.001,now+.105);noise.connect(filter).connect(crack).connect(audioContext.destination);noise.start(now);noise.stop(now+.11);const thump=audioContext.createOscillator(),body=audioContext.createGain();thump.type='triangle';thump.frequency.setValueAtTime(125,now);thump.frequency.exponentialRampToValueAtTime(48,now+.09);body.gain.setValueAtTime(.17,now);body.gain.exponentialRampToValueAtTime(.001,now+.11);thump.connect(body).connect(audioContext.destination);thump.start(now);thump.stop(now+.12)}
-function muzzleFlash(b){const flash=new THREE.Mesh(new THREE.SphereGeometry(.24,8,6),new THREE.MeshBasicMaterial({color:'#fff0a6',transparent:true,opacity:.95}));flash.scale.set(1.7,.8,.8);flash.position.copy(pos(b.x,b.y,1.8));flash.rotation.y=-(b.angle||0);scene.add(flash);setTimeout(()=>{scene.remove(flash);flash.geometry.dispose();flash.material.dispose()},70)}
+function playGunshot(){if(!audioContext||audioContext.state!=='running')return;const now=audioContext.currentTime;const frames=Math.floor(audioContext.sampleRate*.18),buffer=audioContext.createBuffer(1,frames,audioContext.sampleRate),data=buffer.getChannelData(0);for(let i=0;i<frames;i++)data[i]=(Math.random()*2-1)*(1-i/frames);const noise=audioContext.createBufferSource();noise.buffer=buffer;const filter=audioContext.createBiquadFilter();filter.type='lowpass';filter.frequency.setValueAtTime(1100,now);filter.frequency.exponentialRampToValueAtTime(260,now+.14);const crack=audioContext.createGain();crack.gain.setValueAtTime(.24,now);crack.gain.exponentialRampToValueAtTime(.001,now+.16);noise.connect(filter).connect(crack).connect(audioContext.destination);noise.start(now);noise.stop(now+.17);const thump=audioContext.createOscillator(),body=audioContext.createGain();thump.type='triangle';thump.frequency.setValueAtTime(82,now);thump.frequency.exponentialRampToValueAtTime(30,now+.18);body.gain.setValueAtTime(.27,now);body.gain.exponentialRampToValueAtTime(.001,now+.2);thump.connect(body).connect(audioContext.destination);thump.start(now);thump.stop(now+.21)}
+function muzzleFlash(b){const flash=new THREE.Mesh(new THREE.SphereGeometry(.31,8,6),new THREE.MeshBasicMaterial({color:'#fff0a6',transparent:true,opacity:.95}));flash.scale.set(1.8,.8,.8);flash.position.copy(pos(b.x,b.y,2.45));flash.rotation.y=-(b.angle||0);scene.add(flash);setTimeout(()=>{scene.remove(flash);flash.geometry.dispose();flash.material.dispose()},90)}
 function applyState(s){const currentBulletIds=new Set();for(const b of s.bullets){const key=b.id||`${b.owner||b.team}:${b.born||b.x+','+b.y}`;currentBulletIds.add(key);if(receivedSnapshot&&!lastBulletIds.has(key)){playGunshot();muzzleFlash(b)}}lastBulletIds=currentBulletIds;receivedSnapshot=true;state=s;document.querySelector('#blueScore').textContent=s.scores[0];document.querySelector('#redScore').textContent=s.scores[1];document.querySelector('#roomCode').textContent=s.code;document.querySelector('#playerCount').textContent=`${s.players}/${s.capacity} players`;const me=s.playersState.find(p=>p.id===myId);document.querySelector('#hpText').textContent=me?`${Math.max(0,me.hp)} HP`:'— HP';document.querySelector('#hpBar').style.width=`${me?Math.max(0,me.hp):0}%`;
   const notice=document.querySelector('#notice');if(s.winner!==null){notice.innerHTML=`${s.winner===0?'BLUE':'RED'} TEAM WINS!<span class="sub">New round in ${Math.max(1,Math.ceil(s.restartIn/1000))}…</span>`;notice.style.display='block'}else if(!s.running){notice.innerHTML=`Waiting for ${s.waitingFor} more player${s.waitingFor===1?'':'s'}<span class="sub">Share the invite to fill this ${s.mode} room.</span>`;notice.style.display='block'}else notice.style.display='none';
   const present=new Set();for(const p of s.playersState){present.add(p.id);let m=playerMeshes.get(p.id);if(!m){m=createSoldier(p.team);playerMeshes.set(p.id,m)}m.visible=!p.dead;if(p.dead)continue;m.position.copy(pos(p.x,p.y));m.rotation.y=-p.angle; // Three.js forward is +X; negative yaw maps screen-space aim angle.
     updateLabel(m,p);const bar=m.userData.hpBar;if(bar){bar.scale.x=Math.max(.02,p.hp/100);bar.position.x=-(1.72-bar.scale.x*1.72)/2}
   }
   for(const [id,m] of playerMeshes)if(!present.has(id)){scene.remove(m);playerMeshes.delete(id)}
-  const seen=new Set();s.bullets.forEach((b,i)=>{const key=b.id||`${i}`;seen.add(key);let m=bulletMeshes.get(key);if(!m){m=new THREE.Mesh(bulletGeo,mat(b.team===0?'#61d6ff':'#ff697e',.25,.1,b.team===0?'#30bfff':'#ff314d'));m.castShadow=true;m.scale.set(1.9,.8,.8);scene.add(m);bulletMeshes.set(key,m)}m.position.copy(pos(b.x,b.y,1.65));m.rotation.y=-(b.angle||0)});for(const [k,m] of bulletMeshes)if(!seen.has(k)){scene.remove(m);bulletMeshes.delete(k)}
+  const seen=new Set();s.bullets.forEach((b,i)=>{const key=b.id||`${i}`;seen.add(key);let m=bulletMeshes.get(key);if(!m){m=new THREE.Mesh(bulletGeo,mat(b.team===0?'#61d6ff':'#ff697e',.25,.1,b.team===0?'#30bfff':'#ff314d'));m.castShadow=true;m.scale.set(1.9,.8,.8);scene.add(m);bulletMeshes.set(key,m)}m.position.copy(pos(b.x,b.y,2.35));m.rotation.y=-(b.angle||0)});for(const [k,m] of bulletMeshes)if(!seen.has(k)){scene.remove(m);bulletMeshes.delete(k)}
   const teams=s.playersState.map(p=>`${p.team===0?'🔵':'🔴'} ${p.name}${p.id===myId?' (you)':''}`).join('  ·  ');document.querySelector('#teamList').textContent=teams;
 }
 // Convert touch/mouse position into world XY. Camera stays centered on the complete arena.
